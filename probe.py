@@ -1,33 +1,38 @@
 #!/bin/env python3
 
-from conf import TS_DIR, MP4_DIR
+# フォルダにあるTSファイルの合計時間を算出する
+
+from conf import M2TS_DIR, DEST_DIR
 
 import subprocess
 import glob
 import json
+import os.path
 
-ts_files = glob.glob(TS_DIR + '/*.m2ts')
-ts_files.sort()
+m2ts_files = glob.glob(M2TS_DIR + '/*.m2ts')
+m2ts_files.sort()
 
-def check_streams(streams):
-    print(json.dumps(streams, indent=2))
-    cn = []
-    for stream in streams.values():
-        if 'codec_name' in stream:
-            cn.append(stream['codec_name'])
-    if len(streams) != 10:
-        print(len(streams), cn)
-        return True
-    return True
+all_duration = 0
 
-for i, ts_file in enumerate(ts_files):
-    if not '190726-2200' in ts_file:
-        continue
-    cmd = ['ffprobe', '-i', ts_file, '-loglevel', 'quiet', '-show_streams', '-print_format', 'json']
+for i, m2ts_file in enumerate(m2ts_files):
+
+    name = os.path.basename(m2ts_file)
+    dest_file = DEST_DIR + "/" + name[:-5] + ".mp4"
+
+    cmd = ['ffprobe', '-i', m2ts_file, '-loglevel', 'quiet', '-show_streams', '-print_format', 'json']
     output = subprocess.check_output(cmd)
-    streams = {}
+    info = {}
     for stream in json.loads(output.decode('utf-8'))['streams']:
-        streams[int(stream['index'])] = stream
-    if check_streams(streams):
-        print('{}/{} {} {}'.format(i + 1, len(ts_files), ts_file, streams[0]['codec_name']))
+        if 'codec_name' in stream:
+            if stream['codec_name'] == 'mpeg2video':
+                info['width'] = stream.get('width')
+                info['height'] = stream.get('height')
+                info['duration'] = float(stream.get('duration', 0))
 
+    all_duration += info['duration']
+
+    print('{}/{} {} {}'.format(i + 1, len(m2ts_files), name, info))
+
+    # if i > 10: break
+
+print('all_duration: {}'.format(all_duration))
