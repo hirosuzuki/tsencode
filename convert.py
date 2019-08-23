@@ -26,8 +26,8 @@ for i, m2ts_file in enumerate(m2ts_files):
     dest_file = DEST_DIR + "/" + name[:-5] + ".mp4"
 
     # すでに保存先にファイルがあればスキップ
-    #if os.path.exists(dest_file):
-    #    continue
+    if os.path.exists(dest_file):
+        continue
 
     # 変換オプション
     cmd = [
