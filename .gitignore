@@ -1,1 +1,6 @@
 *.pyc
+*.exe
+__pycache__/
+ffmpeg-4.2/
+new-ffmpeg/
+python-3.11.1-embed-amd64/
