@@ -3,13 +3,32 @@
 # ディレクトリにあるTSファイルをすべてMP4ファイルに変換する
 # すでに変換後ファイルがある場合はスキップ
 
+from conf import M2TS_DIR, DEST_DIR
+
 import subprocess
 import glob
 import json
 import os.path
 
-M2TS_DIR = r'\\hs2500k\m2ts'
-DEST_DIR = r'd:/tv'
+DEST_DIR = "F:/tvs"
+
+if 1:
+	fn = "F:/tv/200217-0010[GR27 ＮＨＫ総合１・東京]映像研には手を出すな！.mp4"
+	fn = "F:/tv/200217-0545[GR26 ＮＨＫＥテレ１東京]ボキャブライダー　ｏｎ　ＴＶ.mp4"
+	name = os.path.basename(fn)
+	dest_file = DEST_DIR + "/" + name
+	cmd = [
+        'ffmpeg',
+        '-i', fn,
+        '-vcodec', 'hevc_nvenc',
+        '-vf', 'scale=720:-1',
+        '-vb', '300k',
+        dest_file
+	]
+
+	subprocess.call(cmd)
+
+os.exit()
 
 m2ts_files = glob.glob(M2TS_DIR + '/*.m2ts')
 m2ts_files.sort()
@@ -32,11 +51,15 @@ for i, m2ts_file in enumerate(m2ts_files):
 
     # 変換オプション
     cmd = [
-        'ffmpeg5',
-        # '-analyzeduration', '30M', '-probesize', '30M',
-        # '-deint', '2', '-drop_second_field', '1',
+        'ffmpeg',
+        '-analyzeduration', '30M', '-probesize', '30M',
+        '-deint', '2', '-drop_second_field', '1',
         '-i', m2ts_file,
-        '-vcodec', 'h264_nvenc',
+        '-vcodec', 'hevc_nvenc',
+        # '-c:a', 'aac', '-filter_complex', 'channelsplit', '-ar', '48000', '-ab', '192k', '-ac', '2',
+        '-vf', 'yadif=1:-1:0',
+        '-rc', 'vbr_hq', 
+        '-b:v', '3M',
         '-vsync', '1', '-async', '1',
         dest_file
     ]
